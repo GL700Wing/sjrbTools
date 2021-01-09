@@ -678,6 +678,14 @@ function renamemembers()
 	$renameMembersLog = getcwd() . '/renameMembersLog';
 	@unlink($renameMembersLog);
 
+	// Get the max id_member
+	echo 'Getting max member ID in primary';
+	$sql = "SELECT MAX(id_member) FROM " . PRIMARY_DB_PREFIX . "members";
+	$query = call_mysqli_query($sql, false);
+	$maxmember = mysqli_fetch_row($query)[0];
+	mysqli_free_result($query);
+	echo '...done<br>';
+
 	// Get member names
 	echo 'Getting member names';
 	$sql = "SELECT ID_MEMBER, member_name, real_name, email_address FROM {$db_prefix}members ORDER BY ID_MEMBER DESC";
@@ -713,7 +721,9 @@ function renamemembers()
 			$matches .= ($real_name_hits > 0 ? '&nbsp;\'real_name\'&nbsp;' : '');
 			$matches .= ($email_hits > 0 ? '&nbsp;\'email_address\'&nbsp;' : '');
 
-			$exists = "The same <strong>$matches</strong> for the username <strong>&nbsp;'$mem[1]'&nbsp;</strong> (member ID '$mem[0]') already exists in primary.";
+			$newMemberID = $mem[0] + $maxmember;
+
+			$exists = "The same <strong>$matches</strong> for the username <strong>&nbsp;'$mem[1]'&nbsp;</strong> (new member ID '$newMemberID') already exists in primary.";
 			$renaming = "Renaming <strong>$matches</strong> in secondary ...";
 			echo "$exists $renaming <br />";
 
@@ -732,15 +742,6 @@ function renamemembers()
 		mysqli_free_result($queryPrimaryMemberID);
 	}
 	mysqli_free_result($query);
-
-
-	// Get the max id_member
-	echo 'Getting max member ID in primary';
-	$sql = "SELECT MAX(id_member) FROM " . PRIMARY_DB_PREFIX . "members";
-	$query = call_mysqli_query($sql, false);
-	$maxmember = mysqli_fetch_row($query)[0];
-	mysqli_free_result($query);
-	echo '...done<br>';
 
 	// Look at buddy list on members...
 	echo '<br>Updating buddy lists on members';
